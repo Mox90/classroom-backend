@@ -3,7 +3,7 @@ import { integer, pgTable, timestamp, varchar } from "drizzle-orm/pg-core"
 
 const timestamps = {
     createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }
 
 export const departments = pgTable('departments', {
