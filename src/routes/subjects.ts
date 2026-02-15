@@ -11,7 +11,8 @@ router.get("/", async(req, res) => {
         const { search, department, page = 1, limit = 10 } = req.query;
 
         const currentPage = Math.max(1, Number(page) || 1);
-        const limitPerPage = Math.max(1, Number(limit) || 10);
+        //const limitPerPage = Math.max(1, Number(limit) || 10);
+        const limitPerPage = Math.min(Math.max(1, Number(limit) || 10), 100);
 
         const offset = (currentPage - 1) * limitPerPage;
 
@@ -25,13 +26,14 @@ router.get("/", async(req, res) => {
         )
 
         if(department) {
-            filterConditions.push(ilike(departments.name, `%${department}%`))
+            const deptPattern = `%${String(department).replace(/[%_]/g, '\\$&')}%`;
+            filterConditions.push(ilike(departments.name, deptPattern));
         }
 
         const whereClause = filterConditions.length > 0 ?  and( ...filterConditions ) : undefined;
 
         const countResult = await db
-            .select({count: sql<number>`count(*)`})
+            .select({count: sql<number>`cast(count(*) as integer)`})
             .from(subjects)
             .leftJoin(departments, eq(subjects.departmentId,departments.id))
             .where(whereClause);
